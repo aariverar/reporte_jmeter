@@ -187,15 +187,32 @@ function App() {
           </div>
         )}
         {view === 'status' && (
-          <div className="dashboard-flex">
-            <StatusCard
-              progress={statusData.progress}
-              runInfo={runInfo}
-            />
-            <RunInfoCard
-              runInfo={runInfo}
-            />
-          </div>
+          <>
+            <div className="dashboard-flex">
+              <StatusCard
+                progress={statusData.progress}
+                runInfo={runInfo}
+              />
+              <RunInfoCard
+                runInfo={runInfo}
+              />
+            </div>
+            {/* Nuevos widgets de gráficos en fila */}
+            <div className="dashboard-graphs-row">
+              <section className="dashboard-card dashboard-graph-card">
+                <div className="dashboard-card-title">Gráfico 1</div>
+                <div style={{height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', fontSize: 24}}>
+                  Aquí irá el gráfico 1 (línea o barras)
+                </div>
+              </section>
+              <section className="dashboard-card dashboard-graph-card">
+                <div className="dashboard-card-title">Gráfico 2</div>
+                <div style={{height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', fontSize: 24}}>
+                  Aquí irá el gráfico 2 (línea o barras)
+                </div>
+              </section>
+            </div>
+          </>
         )}
       </main>
     </div>

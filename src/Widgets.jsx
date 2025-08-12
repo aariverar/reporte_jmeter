@@ -47,7 +47,7 @@ export function StatusCard({ progress, runInfo }) {
 
   return (
     <section className="dashboard-card status-card" style={{maxWidth: '340px', minWidth: '280px'}}>
-      <div className="dashboard-status-title">Status</div>
+      <div className="dashboard-card-title">Status</div>
       <div className="dashboard-status-legend">
         <span className="legend-passed"><span className="legend-color legend-passed-color"></span>Passed</span>
         <span className="legend-failed"><span className="legend-color legend-failed-color"></span>Failed</span>
@@ -144,7 +144,7 @@ export function RunInfoCard({ runInfo }) {
   // Alto fijo igual al de StatusCard (usualmente 470px), sin margen extra
   return (
     <section className="dashboard-card runinfo-card">
-      <div className="dashboard-status-title" style={{maxWidth: '340px', minWidth: '280px'}}>Run info</div>
+      <div className="dashboard-card-title" style={{maxWidth: '340px', minWidth: '280px'}}>Run info</div>
       <div className="runinfo-scroll">
         <table className="dashboard-table" style={{width: '100%', fontSize: 16, color: '#222'}}>
           <tbody>
