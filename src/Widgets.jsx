@@ -117,6 +117,7 @@ export function StatusCard({ progress, runInfo }) {
 
 export function RunInfoCard({ runInfo }) {
   // Labels de la imagen adjunta
+  // Mostrar todas las métricas principales, incluyendo las de red y tiempo
   const infoLabels = [
     'Total samples:',
     'Samples passed:',
@@ -140,10 +141,11 @@ export function RunInfoCard({ runInfo }) {
   });
   // Usar exactamente el mismo tamaño que StatusCard (340x470px, paddings iguales)
   // Unificar estilos de letra con StatusCard
+  // Alto fijo igual al de StatusCard (usualmente 470px), sin margen extra
   return (
-    <section className="dashboard-card runinfo-card" style={{width: 340, height: 470, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', padding: '32px 0 24px 0', boxSizing: 'border-box', fontFamily: 'inherit', fontSize: 16, color: '#222'}}>
-      <div className="dashboard-status-title" style={{fontWeight: 700, textAlign: 'left', width: '90%', margin: '0 auto 18px auto', fontSize: 24}}>Run info</div>
-      <div style={{flex: 1, overflowY: 'auto', width: '90%'}}>
+    <section className="dashboard-card runinfo-card">
+      <div className="dashboard-status-title" style={{maxWidth: '340px', minWidth: '280px'}}>Run info</div>
+      <div className="runinfo-scroll">
         <table className="dashboard-table" style={{width: '100%', fontSize: 16, color: '#222'}}>
           <tbody>
             {infoLabels.map((label, i) => (
