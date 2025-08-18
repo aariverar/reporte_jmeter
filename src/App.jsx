@@ -1,6 +1,17 @@
 
 
 import React, { useRef, useState } from 'react';
+import {
+  ComposedChart,
+  Line,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
 
 import { StatusCard, RunInfoCard } from './Widgets';
 import Papa from 'papaparse';
@@ -16,6 +27,7 @@ function App() {
   const [view, setView] = useState('upload'); // 'upload' | 'status' | 'runinfo'
   const [statusData, setStatusData] = useState({ status: 'AAA', progress: 100, passed: true });
   const [runInfo, setRunInfo] = useState([]);
+  const [chartData, setChartData] = useState([]);
 
   const handleFileChange = (e) => {
     setError('');
@@ -152,6 +164,45 @@ function App() {
           const percentPassed = total > 0 ? (passed / total) * 100 : 0;
           setStatusData({ status: failed === 0 ? 'AAA' : 'ERR', progress: percentPassed, passed: failed === 0 });
           setRunInfo(runInfoArr);
+
+          // Procesar datos para el gráfico ART vs TPS
+          // Agrupar por segundo usando las columnas correctas
+          let chartArr = [];
+          if (rows.length > 0) {
+            const grouped = {};
+            rows.forEach(r => {
+              // Usar los nombres exactos: 'timeStamp' y 'elapsed'
+              let ts = r['timeStamp'];
+              let elapsed = r['elapsed'];
+              // Si vienen como string, convertir a número
+              ts = typeof ts === 'string' ? ts.replace(/\D/g, '') : ts;
+              elapsed = typeof elapsed === 'string' ? elapsed.replace(/,/g, '.').replace(/[^\d.]/g, '') : elapsed;
+              ts = Number(ts);
+              elapsed = Number(elapsed);
+              if (!isNaN(ts) && !isNaN(elapsed)) {
+                const sec = Math.floor(ts / 1000) * 1000;
+                if (!grouped[sec]) grouped[sec] = { samples: 0, totalElapsed: 0 };
+                grouped[sec].samples += 1;
+                grouped[sec].totalElapsed += elapsed;
+              }
+            });
+            chartArr = Object.keys(grouped).sort().map(sec => {
+              const d = grouped[sec];
+              // ART en milisegundos para mejor visualización
+              return {
+                time: new Date(Number(sec)).toLocaleTimeString('sv-SE', { hour12: false }),
+                ART: d.samples > 0 ? Number((d.totalElapsed / d.samples).toFixed(2)) : 0, // ms
+                TPS: d.samples,
+              };
+            });
+            // Mostrar los primeros datos en consola para depuración
+            if (chartArr.length > 0) {
+              console.log('Primeros datos para recharts:', chartArr.slice(0, 5));
+            } else {
+              console.log('No se generaron datos para el gráfico.');
+            }
+          }
+          setChartData(chartArr);
           setView('status');
         }, 400); // Espera breve para mostrar el 100%
       },
@@ -218,9 +269,30 @@ function App() {
             {/* Nuevos widgets de gráficos en fila */}
             <div className="dashboard-graphs-row">
               <section className="dashboard-card dashboard-graph-card">
-                <div className="dashboard-card-title">Gráfico 1</div>
-                <div style={{height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', fontSize: 24}}>
-                  Aquí irá el gráfico 1 (línea o barras)
+                <div className="dashboard-card-title">ART vs TPS</div>
+                <div style={{height: 320, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', position: 'relative', overflow: 'hidden'}}>
+                  {chartData && chartData.length > 0 ? (
+                    <>
+                      <div style={{width: '100%', height: '100%', flex: 1, minHeight: 0}}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ComposedChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                            <CartesianGrid stroke="#eee" strokeDasharray="3 3" />
+                            <XAxis dataKey="time" angle={-30} textAnchor="end" height={40} tick={{fontSize:12}} interval={0} />
+                            <YAxis yAxisId="left" label={{ value: 'ART (ms)', angle: -90, position: 'insideLeft', fontSize: 12 }} domain={[0, 50]} tick={{fontSize:12}} />
+                            <YAxis yAxisId="right" orientation="right" label={{ value: 'TPS (req/s)', angle: 90, position: 'insideRight', fontSize: 12 }} domain={[0, 300]} tick={{fontSize:12}} />
+                            <Tooltip />
+                            <Legend />
+                            <Line yAxisId="left" type="monotone" dataKey="ART" stroke="#8bc34a" strokeWidth={3} dot={{ r: 4, stroke: '#558b2f', fill: '#8bc34a' }} name="ART" strokeDasharray="6 4" />
+                            <Area yAxisId="right" type="monotone" dataKey="TPS" fill="#90caf9" stroke="#90caf9" name="TPS" />
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </>
+                  ) : (
+                    <span style={{ color: '#888', fontSize: 20 }}>
+                      No hay datos para graficar. Verifica que el archivo .csv tenga las columnas <b>timeStamp</b> y <b>elapsed</b> con valores numéricos.
+                    </span>
+                  )}
                 </div>
               </section>
               <section className="dashboard-card dashboard-graph-card">
